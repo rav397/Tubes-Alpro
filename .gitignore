@@ -1,25 +1,229 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
+package main
 
-# Test binary, built with `go test -c`
-*.test
+import "fmt"
 
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
+const NMAX = 1024
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+type tabPertanyaan [NMAX]string
 
-# Go workspace file
-go.work
-go.work.sum
+type Jawaban struct {
+	isiJawaban string
+	bobot      int
+}
 
-# env file
-.env
+type TotalSkor struct {
+	namaUser string
+	namaBidang string
+	skorMinat int
+	skorBakat int
+	totalSkor int
+	presentaseMinat float64
+	presentaseBakat float64
+	n int
+}
+
+type tabTotal [NMAX]TotalSkor
+
+type tabJawaban [NMAX]Jawaban
+
+func main() {
+	var pilihan int
+	menu()
+	fmt.Scan(&pilihan)
+	switch pilihan {
+	case 1:
+		tampilTest()
+	}
+}
+
+func tampilTest() {
+	var daftarBidang tabTotal
+	var nama string
+	daftarBidang[0].namaBidang = "Olahraga"
+	daftarBidang[1].namaBidang = "Seni"
+	daftarBidang[2].namaBidang = "Teknologi"
+	daftarBidang[3].namaBidang = "Bisnis"
+	daftarBidang[4].namaBidang = "Mediasi"
+
+	nama = SignUp(&daftarBidang[0])	
+	for i := 0; i <= 5; i++ {
+		daftarBidang[i].namaUser = nama
+	}
+	Test(&daftarBidang[0], BOlahraga())
+	Test(&daftarBidang[1], BSeni())
+	// Test(&daftarBidang[2], BTeknologi())
+	// Test(&daftarBidang[3], BBisnis())
+	// Test(&daftarBidang[4], BMediasi())
+
+	Total(daftarBidang)
+	// Total(skorOlg, skorSeni, skorTeknologi, skorBisnis, skorMediasi)
+}
+
+func SignUp(daftarTotal *TotalSkor) string {
+	var user string
+	fmt.Print("Nama: ")
+	fmt.Scan(&user)
+	daftarTotal.namaUser = user
+
+	return daftarTotal.namaUser
+}
+
+func Test(bidang *TotalSkor, daftarPertanyaan tabPertanyaan) {
+	var daftarJawaban tabJawaban
+	var user int
+	var i int = 0
+
+	fmt.Println("=== JAWABLAH PERTANYAAN BERIKUT ===")
+	fmt.Printf("[BIDANG %s]\n", bidang.namaBidang)
+	for j := 0; j < 5; j++ {
+		for i != 10 {
+			fmt.Println(daftarPertanyaan[i])
+			daftarJawaban = indexJawaban()
+			tampilIndex(daftarJawaban, 5)
+			fmt.Print("Pilihan kamu: ")
+			fmt.Scan(&user)
+
+			if i < 5 {
+				bidang.skorMinat = bidang.skorMinat + daftarJawaban[user-1].bobot
+			}
+			if i >= 5 {
+				bidang.skorBakat = bidang.skorBakat + daftarJawaban[user-1].bobot
+			}
+			i++
+
+		}
+	}
+	hitungPresentase(bidang)
+}
+
+func hitungPresentase(bidang *TotalSkor) {
+	bidang.presentaseMinat = (float64(bidang.skorMinat) / 25.0) * 100
+	bidang.presentaseBakat = (float64(bidang.skorBakat) / 25.0) * 100
+}
+
+func tampilIndex(daftar tabJawaban, N int) {
+	for i := 0; i < N; i++ {
+		fmt.Println(i+1, " - ", daftar[i].isiJawaban)
+	}
+}
+
+func menu() {
+	fmt.Println("=== MENU APLIKASI REKOMENDASI KARIER ===")
+	fmt.Println("1. Test Minat & Bakat")
+	fmt.Println("2. Exit")
+	fmt.Println()
+	fmt.Print("Pilih Opsi:  ")
+}
+
+func Total(daftarTotal tabTotal) {
+	var bidang TotalSkor
+	fmt.Printf("Nama: %s\n", daftarTotal[0].namaUser)
+	for i := 0; i < 5; i++ {
+		bidang = daftarTotal[i]
+		bidang.totalSkor = bidang.skorMinat + bidang.skorBakat
+		fmt.Printf("Bidang: %s\n", bidang.namaBidang)
+		fmt.Printf("Minat: %d, Bakat: %d, Total Skor: %d\n", bidang.skorMinat, bidang.skorBakat, bidang.totalSkor)
+		fmt.Printf("Presentase Minat: %.0f", bidang.presentaseMinat)
+		fmt.Print("%\n")
+		fmt.Printf("Presentase Bakat: %.0f", bidang.presentaseBakat)
+		fmt.Print("%\n")
+	}
+}
+
+func cetakIsi(daftar tabPertanyaan, N int) {
+	var i int
+	for i = 0; i < N; i++ {
+		fmt.Println(daftar[i])
+	}
+}
+
+func indexJawaban() tabJawaban {
+	var daftar tabJawaban
+	daftar[0].isiJawaban = "Sangat Suka"
+	daftar[0].bobot = 5
+	daftar[1].isiJawaban = "Suka"
+	daftar[1].bobot = 4
+	daftar[2].isiJawaban = "Biasa Saja"
+	daftar[2].bobot = 3
+	daftar[3].isiJawaban = "Tidak suka"
+	daftar[3].bobot = 2
+	daftar[4].isiJawaban = "Sangat Tidak suka"
+	daftar[4].bobot = 1
+
+	return daftar
+}
+
+func BOlahraga() tabPertanyaan {
+	var daftar tabPertanyaan
+	daftar[0] = "Apakah kamu suka mengikuti kegiatan olahraga secara rutin?"
+	daftar[1] = "Apakah kamu merasa senang saat melakukan aktivitas fisik?"
+	daftar[2] = "Apakah kamu memiliki ketahanan fisik yang baik saat berolahraga?"
+	daftar[3] = "Apakah kamu mengikuti kegiatan ekstrakulikuler atau club olahraga?"
+	daftar[4] = "Apakah kamu menyukai kompetisi atau pertandingan olahraga?"
+	daftar[5] = "Apakah kamu mampu menjaga kebugaran fisik secara konsisten?"
+	daftar[6] = "Apakah kamu memiliki koordinasi tubuh yang baik saat beraktivitas fisik?"
+	daftar[7] = "Apakah kamu cepat belajar teknik dalam permainan atau cabang olahraga?"
+	daftar[8] = "Apakah kamu memiliki daya tahan tubuh yang tinggi saat berolahraga?"
+	daftar[9] = "Apakah kamu mampu bekerja sama secara efektif dalam tim olahraga?"
+	return daftar
+}
+
+func BSeni() tabPertanyaan {
+	var daftar tabPertanyaan
+	daftar[0] = "Apakah kamu senang menggambar, melukis, atau membuat karya visual lainnya?"
+	daftar[1] = "Apakah kamu menikmati musik, bernyanyi, atau memainkan alat musik?"
+	daftar[2] = "Apakah kamu suka mengekspresikan diri melalui tarian atau drama?"
+	daftar[3] = "Apakah kamu tertarik mengamati desain, warna, dan estetika dalam benda?"
+	daftar[4] = "Apakah kamu pernah mengikuti lomba atau pameran seni di sekolah/komunitas?"
+	daftar[5] = "Apakah kamu mampu menuangkan ide secara kreatif dalam bentuk visual atau suara?"
+	daftar[6] = "Apakah kamu memiliki keterampilan menggambar, melukis, atau mendesain?"
+	daftar[7] = "Apakah kamu dapat memainkan alat musik atau memahami dasar-dasar musik?"
+	daftar[8] = "Apakah kamu mampu mengekspresikan emosi melalui gerakan, suara, atau gambar?"
+	daftar[9] = "Apakah kamu memiliki kepekaan terhadap warna, bentuk, irama, atau komposisi?"
+	return daftar
+}
+
+func BTeknologi() tabPertanyaan {
+	var daftar tabPertanyaan
+	daftar[0] = "Apakah kamu tertarik mempelajari cara kerja komputer, gadget, atau mesin teknologi lainnya?"
+	daftar[1] = "Apakah kamu senang mencoba aplikasi atau software baru?"
+	daftar[2] = "Apakah kamu ingin tahu bagaimana cara membuat website, game, atau aplikasi?"
+	daftar[3] = "Apakah kamu suka memecahkan masalah teknis atau error pada perangkat elektronik?"
+	daftar[4] = "Apakah kamu mengikuti berita atau perkembangan teknologi terbaru?"
+	daftar[5] = "Apakah kamu dapat mempelajari perangkat lunak atau aplikasi baru dengan cepat?"
+	daftar[6] = "Apakah kamu mampu memecahkan masalah teknis atau logika dengan baik?"
+	daftar[7] = "Apakah kamu mahir menggunakan komputer, gadget, atau alat digital lainnya?"
+	daftar[8] = "Apakah kamu bisa membuat atau memahami kode/program sederhana?"
+	daftar[9] = "Apakah kamu dapat menganalisis sistem atau alur kerja digital?"
+	return daftar
+}
+
+func BBisnis() tabPertanyaan {
+	var daftar tabPertanyaan
+	daftar[0] = "Apakah kamu suka mencari peluang usaha di sekitar kamu?"
+	daftar[1] = "Apakah kamu tertarik mempelajari cara menjual produk agar laku di pasaran?"
+	daftar[2] = "Apakah kamu senang mengatur strategi agar suatu kegiatan berjalan efisien?"
+	daftar[3] = "Apakah kamu tertarik dengan dunia keuangan dan manajemen uang?"
+	daftar[4] = "Apakah kamu merasa semangat saat memimpin kelompok atau menjadi pengambil keputusan?"
+	daftar[5] = "Apakah kamu bisa merencanakan dan mengelola keuangan dengan baik?"
+	daftar[6] = "Apakah kamu mampu melihat peluang usaha di sekitarmu?"
+	daftar[7] = "pakah kamu dapat membuat strategi pemasaran atau promosi?"
+	daftar[8] = "Apakah kamu pandai dalam negosiasi atau membuat kesepakatan?"
+	daftar[9] = "Apakah kamu bisa mengambil keputusan dengan pertimbangan untung-rugi?"
+	return daftar
+}
+
+func BMediasi() tabPertanyaan {
+	var daftar tabPertanyaan
+	daftar[0] = "Apakah kamu senang membuat konten seperti video, tulisan, atau desain untuk media sosial?"
+	daftar[1] = "Apakah kamu suka berbicara di depan umum atau tampil di depan kamera?"
+	daftar[2] = "Apakah kamu tertarik dengan dunia jurnalistik, podcast, atau penyiaran?"
+	daftar[3] = "Apakah kamu senang menyampaikan pesan agar mudah dipahami banyak orang?"
+	daftar[4] = "Apakah kamu mengikuti perkembangan tren digital atau media sosial?"
+	daftar[5] = "Apakah kamu mampu menyampaikan pendapat dengan jelas dan meyakinkan?"
+	daftar[6] = "Apakah kamu bisa menjadi penengah dalam konflik atau perdebatan?"
+	daftar[7] = "Apakah kamu nyaman berbicara di depan umum?"
+	daftar[8] = "Apakah kamu mudah memahami perasaan dan sudut pandang orang lain?"
+	daftar[9] = "Apakah kamu pandai menulis atau membuat narasi yang menarik?"
+	return daftar
+}
